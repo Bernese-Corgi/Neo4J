@@ -1,4 +1,5 @@
 import neo4j from 'neo4j-driver'
+import recordLogger from './logger.js'
 
 let driver
 
@@ -8,7 +9,7 @@ export const initDriver = async (uri, username, password) => {
   driver = neo4j.driver(
     uri,
     authToken,
-    { logging: { level: 'info', logger: (level, msg) => console.log(`${level} | ${msg}`) } }
+    { logging: { level: 'info', logger: (level, msg) => recordLogger(level, msg)} }
   )
   
   await driver.verifyConnectivity()
