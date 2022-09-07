@@ -1,5 +1,5 @@
 import app from "./app.js"
-import { APP_PORT } from './constant.js'
+import { APP_PORT } from './constants.js'
 
 const port = APP_PORT
 
