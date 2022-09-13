@@ -20,3 +20,7 @@ export const initDriver = async (uri, username, password) => {
 export const getDriver = () => {
   return driver
 }
+
+// 글 쓸때 애기 생일 정보 가져오는거
+
+// 글

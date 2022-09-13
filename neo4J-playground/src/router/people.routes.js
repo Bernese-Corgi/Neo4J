@@ -140,3 +140,28 @@ people.get('/hasDaughter', async (req, res) => {
 })
 
 export default people;
+
+/*
+session
+  .run('MERGE (alice:Person {name : $nameParam}) RETURN alice.name AS name', {
+    nameParam: 'Alice'
+  })
+  .subscribe({
+    onKeys: keys => {
+      console.log(keys) // ['name]
+    },
+    onNext: record => {
+      console.log(record.get('name')) // 'Alice'
+    },
+    onCompleted: (summary) => {
+      // `summary` holds the same information as `res.summary`
+
+      // Close the Session
+      session.close()
+    },
+    onError: error => {
+      console.log(error)
+    }
+  })
+
+*/
