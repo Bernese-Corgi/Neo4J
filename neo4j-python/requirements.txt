@@ -3,3 +3,4 @@ uvicorn
 pydantic
 sqlalchemy==1.4.46
 neo4j
+py2neo
