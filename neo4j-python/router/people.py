@@ -28,3 +28,27 @@ async def post_person():
         ))
 
     return summary
+
+def get_people(tx):
+    result = tx.run("MATCH (p:Person) RETURN p")
+    records = list(result)
+    summary = result.consume()
+    return records, summary
+
+@router.get('/')
+async def get_person():
+    with GraphDatabase.driver(URI, auth=AUTH).session(database="neo4j") as session:
+        records, summary = session.execute_read(get_people)
+
+        # Summary information
+        print("The query `{query}` returned {records_count} records in {time} ms.".format(
+            query=summary.query, records_count=len(records),
+            time=summary.result_available_after
+        ))
+
+        people = []
+
+        for person in records:
+            people = [*people, person.data()]
+        
+        return people
