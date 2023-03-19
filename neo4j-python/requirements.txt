@@ -5,3 +5,4 @@ sqlalchemy==1.4.46
 python-decouple
 neo4j==5.4.0
 py2neo
+httpx
