@@ -1,29 +1,33 @@
-from neo4j import GraphDatabase
+from fastapi import FastAPI
+from neo4j import GraphDatabase, basic_auth
 
 # with GraphDatabase.driver(URI, auth=AUTH) as driver:
 #     driver.verify_connectivity()
 
 class Neo4jConnection:
-    def __init__(self, uri, user, password):
-        self.driver = GraphDatabase.driver(uri, auth=(user, password))
+    def __init__(self, app: FastAPI = None):
+        self.driver = None
+        self.session = None
+        
+        if app != None:
+            self.init_app(app=app)
 
+    def init_app(self, app: FastAPI):
+        def get_neo4j_driver():
+            uri = "bolt://localhost:7687"
+            auth = basic_auth("neo4j", "marcella")
+            return GraphDatabase.driver(uri, auth=auth)
+        
+        @app.on_event("startup")
+        async def startup_event():
+            app.state.neo4j_driver = get_neo4j_driver()
+
+        @app.on_event("shutdown")
+        async def shutdown_event():
+            await app.state.neo4j_driver.close()
+
+    
     def close(self):
         self.driver.close()
 
-    def print_greeting(self, message):
-        with self.driver.session() as session:
-            greeting = session.execute_write(self._create_and_return_greeting, message)
-            print(greeting)
-
-    @staticmethod
-    def _create_and_return_greeting(tx, message):
-        result = tx.run("CREATE (a:Greeting) "
-                        "SET a.message = $message "
-                        "RETURN a.message + ', from node ' + id(a)", message=message)
-        return result.single()[0]
-
-
-if __name__ == "__main__":
-    greeter = Neo4jConnection("bolt://localhost:7687", "neo4j", "password")
-    greeter.print_greeting("hello, world")
-    greeter.close()
+neo4j = Neo4jConnection()
