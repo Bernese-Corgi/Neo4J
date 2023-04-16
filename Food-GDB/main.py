@@ -5,6 +5,7 @@ def start_server():
     app = FastAPI()
 
     neo4j_db.init_app(app)
+    
 
     return app
 
