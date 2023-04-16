@@ -28,18 +28,36 @@ class RecipeService:
 
         return list(ingredients.values())
     
-    def get_similar_ingredients_by_recipe_id(self, id: int, only_main: bool):
+    def get_similar_ingredients_by_recipe_id(
+            self,
+            id: int,
+            only_main: bool,
+            same_amt: bool
+    ):
         query="""
             MATCH (r:Recipe { recipe_id: $id })
             MATCH (r)-[m:MADE_BY]->(i:Ingredient)
             WHERE m.type_code = '3060001' // 주재료
             MATCH (i)<-[m2:MADE_BY]-(r2:Recipe)
         """
-        if only_main == True:
-            query += " WHERE m2.type_code = '3060001' "
+
+        condition = {
+            "only_main": {
+                "query": " m2.type_code = '3060001' ",
+                "cond": only_main
+            },
+            "same_amt": {
+                "query": " m2.amount = m.amount ",
+                "cond": same_amt
+            }
+        }
+
+        for i, val in enumerate([item for _, item in condition.items() if item['cond'] != False]):
+            print(i)
+            query += " WHERE " if i == 0 else " AND "
+            query += val["query"]
         
         query += " RETURN r.recipe_id, i.name, m2.type, m2.amount, r2.recipe_id"
-
 
         neo_result = neo4j_db.execute_read(
             query=query,
