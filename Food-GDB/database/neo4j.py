@@ -45,9 +45,12 @@ class Neo4jConnection:
                 session.execute_read(self.tx_func, query, params)
     
     def init_app(self, app: FastAPI):
+        self._driver = self.get_driver()
+
         @app.on_event("startup")
         async def startup_event():
-            self.get_driver()
+            if self._driver == None:
+                self._driver = self.get_driver()
 
         @app.on_event("shutdown")
         async def shutdown_event():
