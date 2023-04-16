@@ -1,3 +1,4 @@
+from typing import Union
 from fastapi import APIRouter
 
 from service.recipe import RecipeService
@@ -17,7 +18,7 @@ async def get_ingredients(recipe_id: int):
 @router.get(
     "/similar-ingredients/{recipe_id}"
 )
-async def get_similar_ingredients(recipe_id: int):
+async def get_similar_ingredients(recipe_id: int, only_main: Union[bool, None] = None):
     recipe = RecipeService()
-    result = recipe.get_similar_ingredients_by_recipe_id(recipe_id)
+    result = recipe.get_similar_ingredients_by_recipe_id(recipe_id, only_main)
     return result
