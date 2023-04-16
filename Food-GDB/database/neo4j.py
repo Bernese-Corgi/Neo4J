@@ -1,29 +1,57 @@
+from fastapi import FastAPI
 from neo4j import GraphDatabase
 
-# with GraphDatabase.driver(URI, auth=AUTH) as driver:
-#     driver.verify_connectivity()
-
 class Neo4jConnection:
-    def __init__(self, uri, user, password):
-        self.driver = GraphDatabase.driver(uri, auth=(user, password))
+    def __init__(self, app: FastAPI = None):
+        self._driver = None
+        self._session = None
 
-    def close(self):
-        self.driver.close()
+        if app != None:
+            self.init_app(app)
 
-    def print_greeting(self, message):
-        with self.driver.session() as session:
-            greeting = session.execute_write(self._create_and_return_greeting, message)
-            print(greeting)
+    def get_driver(self):
+        uri = "bolt://localhost:7687"
+        user = "neo4j"
+        password = "marcella"
+        return GraphDatabase.driver(uri, auth=(user, password))
 
-    @staticmethod
-    def _create_and_return_greeting(tx, message):
-        result = tx.run("CREATE (a:Greeting) "
-                        "SET a.message = $message "
-                        "RETURN a.message + ', from node ' + id(a)", message=message)
-        return result.single()[0]
+    def get_session(self):
+        return self._driver.session(database="neo4j")
+    
+    def tx_func(self, tx, query: str, params: dict):
+        result = tx.run(query, params)
+        return list(result)
 
+    @property
+    def neo4j_session(self):
+        return self.get_session()
+    
+    @property
+    def execute_write(self, query, params):
+        if self._session != None:
+            with self._session:
+                self._session.execute_write(self.tx_func, query, params)
+        else:
+            with self.get_session() as session:
+                session.execute_write(self.tx_func, query, params)
+    
+    @property
+    def execute_read(self, query, params):
+        if self._session != None:
+            with self._session:
+                self._session.execute_read(self.tx_func, query, params)
+        else:
+            with self.get_session() as session:
+                session.execute_read(self.tx_func, query, params)
+    
+    def init_app(self, app: FastAPI):
+        @app.on_event("startup")
+        async def startup_event():
+            self.get_driver()
 
-if __name__ == "__main__":
-    greeter = Neo4jConnection("bolt://localhost:7687", "neo4j", "password")
-    greeter.print_greeting("hello, world")
-    greeter.close()
+        @app.on_event("shutdown")
+        async def shutdown_event():
+            self._session.close()
+            self._driver.close()
+
+neo4j_db = Neo4jConnection()
