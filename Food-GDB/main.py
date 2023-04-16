@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends
 from database.neo4j import neo4j_db
-from router import food
+from router import food, recipe
 
 def start_server():
     app = FastAPI()
@@ -11,6 +11,13 @@ def start_server():
         router=food.router,
         prefix="/food",
         tags=["food"],
+        dependencies=[Depends(neo4j_db.get_session)]
+    )    
+
+    app.include_router(
+        router=recipe.router,
+        prefix="/recipe",
+        tags=["recipe"],
         dependencies=[Depends(neo4j_db.get_session)]
     )    
 
