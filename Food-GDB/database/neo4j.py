@@ -1,3 +1,4 @@
+from typing import Union
 from fastapi import FastAPI
 from neo4j import GraphDatabase
 
@@ -21,28 +22,26 @@ class Neo4jConnection:
     def tx_func(self, tx, query: str, params: dict):
         result = tx.run(query, params)
         return list(result)
+    
+    def execute_write(self, query: str, params: Union[dict, None] = None):
+        if self._session != None:
+            with self._session() as s:
+                result = s.execute_write(self.tx_func, query, params)
+            return result
+        else:
+            with self.get_session() as session:
+                result = session.execute_write(self.tx_func, query, params)
+            return result
 
-    @property
-    def neo4j_session(self):
-        return self.get_session()
-    
-    @property
-    def execute_write(self, query, params):
+    def execute_read(self, query: str, params: Union[dict, None] = None):
         if self._session != None:
-            with self._session:
-                self._session.execute_write(self.tx_func, query, params)
+            with self._session() as s:
+                result = s.execute_read(self.tx_func, query, params)
+            return result
         else:
             with self.get_session() as session:
-                session.execute_write(self.tx_func, query, params)
-    
-    @property
-    def execute_read(self, query, params):
-        if self._session != None:
-            with self._session:
-                self._session.execute_read(self.tx_func, query, params)
-        else:
-            with self.get_session() as session:
-                session.execute_read(self.tx_func, query, params)
+                result = session.execute_read(self.tx_func, query, params)
+            return result
     
     def init_app(self, app: FastAPI):
         self._driver = self.get_driver()
