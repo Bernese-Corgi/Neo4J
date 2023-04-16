@@ -29,8 +29,8 @@ class TranslateService:
                     "order": ing["IRDNT_SN"],
                     "name_kr": ing["IRDNT_NM"], 
                     "amount": ing["IRDNT_CPCTY"], 
-                    "type_code": ing["IRDNT_TY_NM"], 
-                    "type_kr": ing["IRDNT_TY_CODE"],
+                    "type_code": ing["IRDNT_TY_CODE"], 
+                    "type_kr": ing["IRDNT_TY_NM"],
                 }]
             }
             
