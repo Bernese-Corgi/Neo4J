@@ -14,3 +14,7 @@ class Neo4jConnection:
     
     def get_driver(self):
         return self.driver
+    
+    @property
+    def session(self):
+        return self.driver.session()
