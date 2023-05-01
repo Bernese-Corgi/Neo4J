@@ -1,9 +1,13 @@
+import os
+
 from neo4j import GraphDatabase
 
-
 class Neo4jConnection:
-
-    def init_driver(self, uri, username, password):
+    def init_driver(self):
+        uri = os.environ['NEO4J_DB_URI']
+        username = os.environ['NEO4J_DB_USER']
+        password = os.environ['NEO4J_DB_PASSWORD']
+        
         # Create an instance of the driver : 드라이버 인스턴스 생성
         self.driver = GraphDatabase.driver(uri, username, password)
 
